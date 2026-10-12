@@ -1,0 +1,105 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
+
+using namespace std;
+
+// Structure to represent an edge (weight, destination_node)
+typedef pair<int, int> pii; 
+
+class Graph {
+    int V; // Number of vertices
+    vector<vector<pii>> adj; // Adjacency list
+
+public:
+    Graph(int V) {
+        this->V = V;
+        adj.resize(V);
+    }
+
+    // Function to add an undirected weighted edge
+    void addEdge(int u, int v, int weight) {
+        adj[u].push_back({weight, v});
+        adj[v].push_back({weight, u});
+    }
+
+    // Function to find and print the MST using Prim's Algorithm
+    void primMST() {
+        // Min-priority queue storing pairs of (weight, vertex)
+        priority_queue<pii, vector<pii>, greater<pii>> pq;
+
+        int src = 0; // Taking vertex 0 as the starting point
+
+        // Vector to store keys (minimum edge weight to reach a vertex)
+        vector<int> key(V, INT_MAX);
+
+        // Vector to track parent nodes of the MST
+        vector<int> parent(V, -1);
+
+        // Vector to keep track of vertices included in MST
+        vector<bool> inMST(V, false);
+
+        // Insert source vertex into the priority queue and set its key to 0
+        pq.push({0, src});
+        key[src] = 0;
+
+        int mst_weight = 0;
+
+        while (!pq.empty()) {
+            // Extract the vertex with the minimum key value
+            int u = pq.top().second;
+            pq.pop();
+
+            // If the vertex is already part of the MST, skip it
+            if (inMST[u]) continue;
+
+            // Include vertex in MST
+            inMST[u] = true;
+            mst_weight += key[u];
+
+            // Traverse all adjacent vertices of u
+            for (auto& edge : adj[u]) {
+                int weight = edge.first;
+                int v = edge.second;
+
+                // If v is not yet in MST and the edge weight u-v is smaller than the current key of v
+                if (!inMST[v] && key[v] > weight) {
+                    // Update key of v
+                    key[v] = weight;
+                    pq.push({key[v], v});
+                    parent[v] = u;
+                }
+            }
+        }
+
+        // Print the constructed MST edges and total weight
+        cout << "Edges in the Minimum Spanning Tree:\n";
+        for (int i = 1; i < V; ++i) {
+            if (parent[i] != -1) {
+                cout << parent[i] << " - " << i << " \tWeight: " << key[i] << "\n";
+            }
+        }
+        cout << "Total Weight of MST: " << mst_weight << "\n";
+    }
+};
+
+int main() {
+    // Create a graph with 6 vertices (0 to 5)
+    Graph g(6);
+
+    // Add edges: addEdge(u, v, weight)
+    g.addEdge(0, 1, 4);
+    g.addEdge(0, 2, 4);
+    g.addEdge(1, 2, 2);
+    g.addEdge(2, 3, 3);
+    g.addEdge(2, 5, 2);
+    g.addEdge(2, 4, 4);
+    g.addEdge(3, 4, 3);
+    g.addEdge(5, 4, 3);
+
+    // Find the MST
+    g.primMST();
+
+    return 0;
+}
